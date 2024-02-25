@@ -2,12 +2,14 @@ import os
 
 import streamlit as st
 from dotenv import load_dotenv
-from langchain_community.chat_models import ChatOpenAI
-from langchain.callbacks import StreamlitCallbackHandler
+from langchain_openai import ChatOpenAI
+from langchain_community.callbacks import StreamlitCallbackHandler
 from langchain.memory import ConversationBufferMemory
-from langchain.prompts import MessagesPlaceholder
 from langchain.chains import RetrievalQA
 from add_document import initialize_vectorstore
+from langchain_community.vectorstores import FAISS
+from langchain_core.vectorstores import VectorStoreRetriever
+import pinecone
 
 load_dotenv()
 
@@ -20,6 +22,7 @@ def create_qa_chain():
         streaming=True,
         callbacks=[callback],
         )
+
 
     vectorstore = initialize_vectorstore()
 
