@@ -1,57 +1,93 @@
-import os
-
 import streamlit as st
+import openai
+from langsmith import traceable, Client
+from langsmith.wrappers import wrap_openai
+from openevals.llm import create_llm_as_judge
+from openevals.prompts import CORRECTNESS_PROMPT
+import os
+import uuid
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_community.callbacks import StreamlitCallbackHandler
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import RetrievalQA
-from add_document import initialize_vectorstore
-from langchain_community.vectorstores import FAISS
-from langchain_core.vectorstores import VectorStoreRetriever
-import pinecone
+from langsmith.utils import LangSmithConflictError
 
 load_dotenv()
 
-def create_qa_chain():
-    callback = StreamlitCallbackHandler(st.container())
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_ENDPOINT"] = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-    llm = ChatOpenAI(
-        model_name=os.environ["OPENAI_API_MODEL"],
-        temperature=float(os.environ["OPENAI_API_TEMPERATURE"]),
-        streaming=True,
-        callbacks=[callback],
-        )
+client = wrap_openai(openai.OpenAI())
+langsmith_client = Client()
 
+if "thread_id" not in st.session_state:
+    st.session_state["thread_id"] = str(uuid.uuid4())
 
-    vectorstore = initialize_vectorstore()
+session_id = st.session_state["thread_id"]
 
-    qa_chain = RetrievalQA.from_llm(llm=llm, retriever=vectorstore.as_retriever())
+langsmith_extra = {"metadata": {"session_id": session_id}}
 
-    return qa_chain
+@traceable(name="Chat Bot")
+def chat_pipeline(inputs: dict) -> dict:
+    question = inputs["question"]
+    messages = [{"role": "user", "content": question}]
 
-if "agent_chain" not in st.session_state:
-    st.session_state.agent_chain = create_qa_chain()
+    chat_completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages
+    )
 
-st.title("langchain-streamlit-app")
+    return {"answer": chat_completion.choices[0].message.content.strip()}
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Evaluatorの設定
+def correctness_evaluator(inputs: dict, outputs: dict, reference_outputs: dict):
+    evaluator = create_llm_as_judge(
+        prompt=CORRECTNESS_PROMPT,
+        model="openai:gpt-4o",
+        feedback_key="correctness",
+    )
+    return evaluator(inputs=inputs, outputs=outputs, reference_outputs=reference_outputs)
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# Streamlit UI
+st.title("LangSmith Evaluation Chatbot")
 
-prompt = st.chat_input("What's up?")
+prompt = st.chat_input("メッセージを入力してください")
 
 if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.setdefault("messages", []).append({"role": "user", "content": prompt})
 
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    with st.chat_message("assistant"):
-        qa_chain = create_qa_chain()
-        response = qa_chain.invoke(prompt)
+    inputs = {"question": prompt}
+    response_dict = chat_pipeline(inputs)
+    response = response_dict["answer"]
 
-    st.session_state.messages.append({"role": "assistant", "content": response["result"]})
+    with st.chat_message("assistant"):
+        st.markdown(response)
+
+    st.session_state.messages.append({"role": "assistant", "content": response})
+
+# Evaluationを実施
+try:
+    dataset = langsmith_client.create_dataset(
+        dataset_name="Chatbot Evaluation Dataset v4",
+        description="Dataset for chatbot evaluation."
+    )
+except LangSmithConflictError:
+    dataset = langsmith_client.read_dataset(dataset_name="Chatbot Evaluation Dataset")
+
+examples = [{
+    "inputs": {"question": "What is the capital of France?"},
+    "outputs": {"answer": "The capital of France is Paris."}
+}]
+langsmith_client.create_examples(dataset_id=dataset.id, examples=examples)
+
+if st.button("Run Evaluation"):
+    experiment_results = langsmith_client.evaluate(
+        chat_pipeline,
+        data="Chatbot Evaluation Dataset",
+        evaluators=[correctness_evaluator],
+        experiment_prefix="chatbot-eval"
+    )
+
+    st.write("Evaluation completed. Check LangSmith dashboard for results.")
