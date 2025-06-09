@@ -19,7 +19,7 @@ os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT", "pr-sparkling-s
 
 openai_client = wrap_openai(OpenAI())
 
-@traceable
+@traceable(run_type="retriever")
 def retriever(query: str):
     vectorstore = initialize_vectorstore()
     docs = vectorstore.similarity_search(query)
