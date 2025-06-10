@@ -29,8 +29,23 @@ langsmith_extra = {"metadata": {"session_id": session_id}}
 @traceable(run_type="retriever")
 def retriever(query: str):
     vectorstore = initialize_vectorstore()
-    docs = vectorstore.similarity_search(query)
-    return [doc.page_content for doc in docs]
+    docs_with_scores = vectorstore.similarity_search_with_score(query)
+    
+    # スコア情報をLangSmithに記録
+    run_tree = ls.get_current_run_tree()
+    if run_tree:
+        scores = [score for _, score in docs_with_scores]
+        run_tree.outputs = {
+            "documents": [doc.page_content for doc, _ in docs_with_scores],
+            "scores": scores,
+            "score_stats": {
+                "min_score": min(scores) if scores else None,
+                "max_score": max(scores) if scores else None,
+                "avg_score": sum(scores) / len(scores) if scores else None
+            }
+        }
+    
+    return [doc.page_content for doc, _ in docs_with_scores]
 
 @traceable(name="RAG Chat Bot")
 def rag(question: str, get_chat_history: bool = False):
