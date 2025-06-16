@@ -8,7 +8,7 @@ load_dotenv()
 
 # OpenAIのChatモデルを設定
 llm = ChatOpenAI(
-    model="gpt-4o",       # モデル指定（GPT-4o）
+    model="gpt-4o-mini",       # モデル指定（GPT-4o）
     temperature=0,        # 決定的出力を得るため
     openai_api_key=os.getenv("OPENAI_API_KEY")
 )
