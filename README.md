@@ -25,7 +25,6 @@ pip install -r requirements.txt
 ```env
 # OpenAI設定
 OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_API_MODEL=gpt-3.5-turbo
 OPENAI_API_TEMPERATURE=0.7
 
 # Pinecone設定

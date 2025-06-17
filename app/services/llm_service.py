@@ -5,12 +5,12 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-def get_llm():
+def get_llm(model_name: str = settings.MODEL_NAME, temperature: float = settings.TEMPERATURE):
     return ChatOpenAI(
-        model=settings.MODEL_NAME,
-        temperature=settings.TEMPERATURE,
-        openai_api_key=settings.OPENAI_API_KEY,
-        streaming=True
+        model = model_name,
+        temperature = temperature,
+        openai_api_key = settings.OPENAI_API_KEY,
+        streaming = True
     )
 
 def create_chat_prompt(system_prompt: str, messages: list):

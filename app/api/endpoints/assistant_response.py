@@ -46,13 +46,13 @@ ASSISTANT_PROMPT = """
 @router.post("/assistant-response")
 async def assistant_response(request: BaseRequest):
     try:
-        llm = get_llm()
+        # TODO: モデルをo3に変更すること
+        llm = get_llm(model_name="gpt-4o-mini", temperature=0.7)
         
         # メッセージリストを作成
         message_log = [{"role": msg.role, "content": msg.content} for msg in request.message_log]
         message_log.append({"role": "user", "content": request.new_message})
         
-        # プロンプトを設定
         prompt = create_chat_prompt(ASSISTANT_PROMPT, message_log)
         chain = prompt | llm
 

@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from dotenv import load_dotenv
 
 class Settings(BaseSettings):
     # アプリケーション基本設定
@@ -9,10 +11,8 @@ class Settings(BaseSettings):
     
     # OpenAI設定
     OPENAI_API_KEY: str
-    MODEL_NAME: str = "gpt-4"
-    TEMPERATURE: float = 0
-    OPENAI_API_MODEL: str = "gpt-3.5-turbo"
-    OPENAI_API_TEMPERATURE: float = 0.7
+    MODEL_NAME: str = "gpt-3.5-turbo" # デフォルトのモデル
+    TEMPERATURE: float = 0.7 # デフォルトの温度
     
     # Pinecone設定
     PINECONE_API_KEY: Optional[str] = None
@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
 @lru_cache()
 def get_settings() -> Settings:

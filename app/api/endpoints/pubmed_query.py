@@ -35,9 +35,11 @@ PUBMED_QUERY_PROMPT = """
 @router.post("/pubmed-query", response_model=PubMedQueryResponse)
 async def generate_pubmed_query(request: BaseRequest):
     try:
-        llm = get_llm()
+        llm = get_llm(model_name="gpt-4o-mini", temperature=0.7)
         # message_logを辞書のリストに変換
         message_log = [{"role": msg.role, "content": msg.content} for msg in request.message_log]
+        message_log.append({"role": "user", "content": request.new_message})
+
         prompt = create_chat_prompt(PUBMED_QUERY_PROMPT, message_log)
         chain = prompt | llm
         response = chain.invoke({})

@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.endpoints import pubmed_query, db_evidence_requirements, assistant_response
 from app.core.config import get_settings
+from dotenv import load_dotenv
+
+# ルートの .env を読み込む
+load_dotenv()
 
 settings = get_settings()
 
