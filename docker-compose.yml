@@ -9,4 +9,5 @@ services:
       - .:/app
     environment:
       - ENVIRONMENT=development
+      - PYTHONPATH=/app
     restart: unless-stopped 
