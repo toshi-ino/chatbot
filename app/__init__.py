@@ -1,3 +1,3 @@
 """
-Medical Chatbot API
+AI API
 """ 

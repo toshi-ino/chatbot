@@ -4,7 +4,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # アプリケーション基本設定
-    APP_NAME: str = "Medical Chatbot API"
+    APP_NAME: str = "AI API"
     DEBUG: bool = False
     
     # OpenAI設定

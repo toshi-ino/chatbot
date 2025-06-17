@@ -15,7 +15,7 @@ def test_pubmed_query_endpoint():
     }
     
     # エンドポイントにリクエストを送信
-    response = client.post("/api/v1/pubmed-query", json=request_data)
+    response = client.post("/api/pubmed-query", json=request_data)
     
     # レスポンスの検証
     assert response.status_code == 200
@@ -31,7 +31,7 @@ def test_pubmed_query_endpoint_with_empty_query():
         "max_results": 5
     }
     
-    response = client.post("/api/v1/pubmed-query", json=request_data)
+    response = client.post("/api/pubmed-query", json=request_data)
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)
@@ -46,7 +46,7 @@ def test_pubmed_query_endpoint_with_invalid_max_results():
         "max_results": -1
     }
     
-    response = client.post("/api/v1/pubmed-query", json=request_data)
+    response = client.post("/api/pubmed-query", json=request_data)
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)
@@ -61,7 +61,7 @@ def test_pubmed_query_endpoint_with_large_max_results():
         "max_results": 100
     }
     
-    response = client.post("/api/v1/pubmed-query", json=request_data)
+    response = client.post("/api/pubmed-query", json=request_data)
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)

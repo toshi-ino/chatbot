@@ -20,9 +20,9 @@ app.add_middleware(
 )
 
 # ルーターの登録
-app.include_router(pubmed_query.router, prefix="/api/v1", tags=["pubmed"])
-app.include_router(db_evidence_requirements.router, prefix="/api/v1", tags=["evidence"])
-app.include_router(assistant_response.router, prefix="/api/v1", tags=["assistant"])
+app.include_router(pubmed_query.router, prefix="/api", tags=["pubmed_query"])
+app.include_router(db_evidence_requirements.router, prefix="/api", tags=["db_evidence"])
+app.include_router(assistant_response.router, prefix="/api", tags=["assistant_response"])
 
 @app.get("/")
 async def root():

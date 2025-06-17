@@ -17,7 +17,7 @@ def test_assistant_response_endpoint():
     }
     
     # エンドポイントにリクエストを送信
-    response = client.post("/api/v1/assistant-response", json=request_data)
+    response = client.post("/api/assistant-response", json=request_data)
     
     # レスポンスの検証
     assert response.status_code == 200
@@ -31,7 +31,7 @@ def test_assistant_response_endpoint_with_empty_message():
         "message_log": []
     }
     
-    response = client.post("/api/v1/assistant-response", json=request_data)
+    response = client.post("/api/assistant-response", json=request_data)
     assert response.status_code == 200
     assert isinstance(response.text, str)
 
@@ -55,7 +55,7 @@ def test_assistant_response_endpoint_with_conversation_history():
         ]
     }
     
-    response = client.post("/api/v1/assistant-response", json=request_data)
+    response = client.post("/api/assistant-response", json=request_data)
     assert response.status_code == 200
     assert isinstance(response.text, str)
     assert len(response.text) > 0
@@ -76,7 +76,7 @@ def test_assistant_response_endpoint_with_medical_evidence():
         ]
     }
     
-    response = client.post("/api/v1/assistant-response", json=request_data)
+    response = client.post("/api/assistant-response", json=request_data)
     assert response.status_code == 200
     assert isinstance(response.text, str)
     assert len(response.text) > 0 
