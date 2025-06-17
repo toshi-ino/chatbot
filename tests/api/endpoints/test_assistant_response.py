@@ -1,5 +1,5 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -15,10 +15,10 @@ def test_assistant_response_endpoint():
             }
         ]
     }
-    
+
     # エンドポイントにリクエストを送信
     response = client.post("/api/assistant-response", json=request_data)
-    
+
     # レスポンスの検証
     assert response.status_code == 200
     assert isinstance(response.text, str)
@@ -30,7 +30,7 @@ def test_assistant_response_endpoint_with_empty_message():
         "new_message": "",
         "message_log": []
     }
-    
+
     response = client.post("/api/assistant-response", json=request_data)
     assert response.status_code == 200
     assert isinstance(response.text, str)
@@ -54,7 +54,7 @@ def test_assistant_response_endpoint_with_conversation_history():
             }
         ]
     }
-    
+
     response = client.post("/api/assistant-response", json=request_data)
     assert response.status_code == 200
     assert isinstance(response.text, str)
@@ -75,8 +75,8 @@ def test_assistant_response_endpoint_with_medical_evidence():
             }
         ]
     }
-    
+
     response = client.post("/api/assistant-response", json=request_data)
     assert response.status_code == 200
     assert isinstance(response.text, str)
-    assert len(response.text) > 0 
+    assert len(response.text) > 0

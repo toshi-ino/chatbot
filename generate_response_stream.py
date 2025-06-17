@@ -1,18 +1,19 @@
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-from langchain.schema.messages import AIMessage, HumanMessage
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+from langchain.prompts import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+)
+from langchain.schema.messages import AIMessage, HumanMessage
+from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 
 load_dotenv()
 
 # OpenAIのChatモデルを設定（ストリーミングを有効化）
-llm = ChatOpenAI(
-    model="gpt-4o",
-    temperature=0,
-    streaming=True,
-    openai_api_key=os.getenv("OPENAI_API_KEY")
-)
+llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=True, api_key=SecretStr(os.getenv("OPENAI_API_KEY", "")))
+
 
 def stream_assistant_response(prompt_template: str, new_message: str, message_log: list):
     messages = [SystemMessagePromptTemplate.from_template(prompt_template)]
@@ -36,6 +37,7 @@ def stream_assistant_response(prompt_template: str, new_message: str, message_lo
         if content:
             yield content
 
+
 # プロンプト内の {PMID} は {{PMID}} にエスケープします。
 prompt = """
 あなたは医学分野の専門家です。ユーザーの医療に関する質問に対して、科学的根拠に基づいた回答を提供します。
@@ -50,7 +52,7 @@ if __name__ == "__main__":
     new_message = "高齢の心房細動患者に対する抗凝固療法の最新エビデンスを教えてください。"
     message_log = [
         {"role": "user", "content": "心房細動患者の出血リスク管理について教えてください。"},
-        {"role": "assistant", "content": "心房細動患者の出血リスク管理にはCHA₂DS₂-VAScスコアやHAS-BLEDスコアが使用されます。[DB_EVIDENCE:NEED]"}
+        {"role": "assistant", "content": "心房細動患者の出血リスク管理にはCHA₂DS₂-VAScスコアやHAS-BLEDスコアが使用されます。[DB_EVIDENCE:NEED]"},
     ]
 
     print("LLMの応答（ストリーミング）:")

@@ -1,8 +1,9 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import pubmed_query, db_evidence_requirements, assistant_response
+
+from app.api.endpoints import assistant_response, db_evidence_requirements, pubmed_query
 from app.core.config import get_settings
-from dotenv import load_dotenv
 
 # ルートの .env を読み込む
 load_dotenv()
@@ -30,4 +31,4 @@ app.include_router(assistant_response.router, prefix="/api", tags=["assistant_re
 
 @app.get("/")
 async def root():
-    return {"message": "AI API is running"} 
+    return {"message": "AI API is running"}

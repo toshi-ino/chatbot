@@ -1,20 +1,18 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+
 from app.api.schemas.schemas import BaseRequest
-from app.services.llm_service import get_llm, create_chat_prompt
-from langchain.schema.messages import HumanMessage, AIMessage
-from typing import List, Dict, Any
+from app.services.llm_service import create_chat_prompt, get_llm
 
 router = APIRouter()
 
 ASSISTANT_PROMPT = """
-あなたは医学分野の専門家です。ユーザーの医療に関する質問に対して、科学的根拠に基づいた回答を提供します。  
-入力に論文情報が付随している場合はそれを参考にして、質問に対する包括的な回答を作成してください。  
+あなたは医学分野の専門家です。ユーザーの医療に関する質問に対して、科学的根拠に基づいた回答を提供します。
+入力に論文情報が付随している場合はそれを参考にして、質問に対する包括的な回答を作成してください。
 
 ## 禁止事項
-- 論文本文からの **直接引用** 部分を除き、「**提案**」および「**推奨**」という語を使用しない。  
-- 臨床データ等の根拠を示す際に、「PMIDの具体的な番号は提供されていませんが、最新のエビデンスに基づく情報です」と記載しない。  
-
+- 論文本文からの **直接引用** 部分を除き、「**提案**」および「**推奨**」という語を使用しない。
+- 臨床データ等の根拠を示す際に、「PMIDの具体的な番号は提供されていませんが、最新のエビデンスに基づく情報です」と記載しない。
 ## 指示
 1. 論文情報が提供された場合はそれに基づいて回答を構成すること
 2. 可能な限り最新のエビデンスに基づいて治療方針を提案すること
@@ -31,7 +29,7 @@ ASSISTANT_PROMPT = """
 - 回答は日本語で提供してください。
 - まずは結論と要約を述べてください。
     * タイトルは「要約」としてください。
-- その後、**文献に基づく治療方針の概要** を示してください。  
+- その後、**文献に基づく治療方針の概要** を示してください。
 - 臨床データ等の根拠を示してください。
 - 回答には、この内容を必ず記載してください
     * 本回答は情報提供を目的としているため、最終的な診断や治療方針の決定は主治医の判断に委ねられます。
@@ -43,32 +41,30 @@ ASSISTANT_PROMPT = """
 - 表示の際、記号が文字化けすることがあるので留意して出力してください(react-markdownで表示しています)
 """
 
+
 @router.post("/assistant-response")
 async def assistant_response(request: BaseRequest):
     try:
         # TODO: モデルをo3に変更すること
         llm = get_llm(model_name="gpt-4o-mini", temperature=0.7)
-        
+
         # メッセージリストを作成
         message_log = [{"role": msg.role, "content": msg.content} for msg in request.message_log]
         message_log.append({"role": "user", "content": request.new_message})
-        
+
         prompt = create_chat_prompt(ASSISTANT_PROMPT, message_log)
         chain = prompt | llm
 
         async def generate():
             try:
                 async for chunk in chain.astream({}):
-                    if hasattr(chunk, 'content') and chunk.content:
-                        yield chunk.content.encode('utf-8')
+                    if hasattr(chunk, "content") and chunk.content:
+                        yield str(chunk.content).encode("utf-8")
             except Exception as e:
-                print(f"Streaming error: {str(e)}")
-                raise HTTPException(status_code=500, detail=str(e))
+                print(f"Streaming error: {e!s}")
+                raise HTTPException(status_code=500, detail=str(e)) from e
 
-        return StreamingResponse(
-            generate(),
-            media_type="text/plain; charset=utf-8"
-        )
+        return StreamingResponse(generate(), media_type="text/plain; charset=utf-8")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e)) from e

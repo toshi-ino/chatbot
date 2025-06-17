@@ -1,5 +1,5 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -13,10 +13,10 @@ def test_pubmed_query_endpoint():
         ],
         "max_results": 5
     }
-    
+
     # エンドポイントにリクエストを送信
     response = client.post("/api/pubmed-query", json=request_data)
-    
+
     # レスポンスの検証
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
@@ -30,7 +30,7 @@ def test_pubmed_query_endpoint_with_empty_query():
         "message_log": [],
         "max_results": 5
     }
-    
+
     response = client.post("/api/pubmed-query", json=request_data)
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
@@ -45,7 +45,7 @@ def test_pubmed_query_endpoint_with_invalid_max_results():
         ],
         "max_results": -1
     }
-    
+
     response = client.post("/api/pubmed-query", json=request_data)
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
@@ -60,9 +60,9 @@ def test_pubmed_query_endpoint_with_large_max_results():
         ],
         "max_results": 100
     }
-    
+
     response = client.post("/api/pubmed-query", json=request_data)
     assert response.status_code == 200
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)
-    assert len(response.json()["pubmed_query"]) > 0 
+    assert len(response.json()["pubmed_query"]) > 0

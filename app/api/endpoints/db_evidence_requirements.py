@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
+
 from app.api.schemas.schemas import BaseRequest, JudgeResponse
-from app.services.llm_service import get_llm, create_chat_prompt
+from app.services.llm_service import create_chat_prompt, get_llm
 
 router = APIRouter()
 
@@ -24,6 +25,7 @@ ASSIST_JUDGE_PROMPT = """
 - 「論文データベースの検索」が不要であると判断した場合は[DB_EVIDENCE:NOT]を返してください
 """
 
+
 @router.post("/db_evidence_requirements", response_model=JudgeResponse)
 async def judge_db_evidence_requirement(request: BaseRequest):
     try:
@@ -35,8 +37,8 @@ async def judge_db_evidence_requirement(request: BaseRequest):
         prompt = create_chat_prompt(ASSIST_JUDGE_PROMPT, message_log)
         chain = prompt | llm
         response = chain.invoke({})
-        
-        result = response.content.strip()
+
+        result = str(response.content).strip()
         return JudgeResponse(result=result)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e)) from e

@@ -1,10 +1,9 @@
 # プロンプトをLangSmithにアップロードする処理
 
-import os
-from langsmith import Client
+from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
+from langsmith import Client
 
 # 環境変数を読み込み
 load_dotenv()
@@ -14,7 +13,7 @@ client = Client()
 
 def upload_rag_system_prompt():
     """RAGシステム用のプロンプトをLangSmithにアップロード"""
-    
+
     # RAGシステム用のプロンプトテンプレートを作成
     rag_prompt = ChatPromptTemplate.from_messages([
         ("system", """あなたは親切で知識豊富なアシスタントです。
@@ -29,7 +28,7 @@ def upload_rag_system_prompt():
 - 回答は日本語で行ってください"""),
         ("human", "{question}")
     ])
-    
+
     try:
         # プロンプトをLangSmithにアップロード
         url = client.push_prompt("rag-system-prompt", object=rag_prompt)
@@ -41,7 +40,7 @@ def upload_rag_system_prompt():
 
 def upload_rag_with_model():
     """RAGシステム用のプロンプト（モデル設定付き）をLangSmithにアップロード"""
-    
+
     # プロンプトテンプレートを作成
     rag_prompt = ChatPromptTemplate.from_messages([
         ("system", """あなたは親切で知識豊富なアシスタントです。
@@ -56,17 +55,17 @@ def upload_rag_with_model():
 - 回答は日本語で行ってください"""),
         ("human", "{question}")
     ])
-    
+
     # モデルを設定
     model = ChatOpenAI(
         model="gpt-4o",
         temperature=0.1,
         max_tokens=1000
     )
-    
+
     # プロンプトとモデルを組み合わせたチェーンを作成
     chain = rag_prompt | model
-    
+
     try:
         # チェーンをLangSmithにアップロード
         url = client.push_prompt("rag-system-with-model", object=chain)
@@ -78,7 +77,7 @@ def upload_rag_with_model():
 
 def upload_conversation_prompt():
     """会話継続用のプロンプトをLangSmithにアップロード"""
-    
+
     conversation_prompt = ChatPromptTemplate.from_messages([
         ("system", """あなたは親切で知識豊富なアシスタントです。
 以下の情報と会話履歴を参考にして、ユーザーの質問に答えてください：
@@ -96,7 +95,7 @@ def upload_conversation_prompt():
 - 回答は日本語で行ってください"""),
         ("human", "{question}")
     ])
-    
+
     try:
         url = client.push_prompt("rag-conversation-prompt", object=conversation_prompt)
         print(f"✅ 会話継続プロンプトをアップロードしました: {url}")
@@ -118,18 +117,18 @@ def list_uploaded_prompts():
 def main():
     """メイン実行関数"""
     print("🚀 LangSmithにプロンプトをアップロードします...\n")
-    
+
     # 各プロンプトをアップロード
     upload_rag_system_prompt()
     upload_rag_with_model()
     upload_conversation_prompt()
-    
+
     print("\n" + "="*50)
-    
+
     # アップロード済みプロンプトを表示
     list_uploaded_prompts()
-    
+
     print("\n✨ プロンプトのアップロードが完了しました！")
 
 if __name__ == "__main__":
-    main() 
+    main()

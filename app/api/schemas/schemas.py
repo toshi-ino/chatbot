@@ -1,5 +1,7 @@
+from typing import List
+
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+
 
 class Message(BaseModel):
     role: str
@@ -16,4 +18,4 @@ class PubMedQueryResponse(BaseModel):
     pubmed_query: str
 
 class AssistantResponse(BaseModel):
-    response: str 
+    response: str

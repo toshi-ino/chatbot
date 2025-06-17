@@ -1,16 +1,16 @@
-from langchain_openai import ChatOpenAI  # ← ここを修正
-from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-from langchain.schema.messages import AIMessage, HumanMessage
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+from langchain.prompts import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+)
+from langchain.schema.messages import AIMessage, HumanMessage
+from langchain_openai import ChatOpenAI  # ← ここを修正
 
 load_dotenv()
 
-llm = ChatOpenAI(
-    model="gpt-4o",
-    temperature=0,
-    openai_api_key=os.getenv("OPENAI_API_KEY")
-)
+llm = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 assist_judge_prompt = """
 あなたは医学分野の専門家です。
@@ -21,6 +21,7 @@ assist_judge_prompt = """
 
 判定結果以外は絶対に書かないでください。
 """
+
 
 def judge_assist(new_message: str, message_log: list) -> str:
     messages = [SystemMessagePromptTemplate.from_template(assist_judge_prompt)]
@@ -44,13 +45,14 @@ def judge_assist(new_message: str, message_log: list) -> str:
 
     return result_text
 
+
 if __name__ == "__main__":
     new_message = "心房細動の患者に対する抗凝固療法の最新エビデンスを教えてください。"
     message_log = [
         {"role": "user", "content": "高血圧患者への降圧剤使用について教えてください。"},
         {"role": "assistant", "content": "[DB_EVIDENCE:NEED]"},
         {"role": "user", "content": "最近の研究で高血圧治療の新しい知見はありますか？"},
-        {"role": "assistant", "content": "[DB_EVIDENCE:NEED]"}
+        {"role": "assistant", "content": "[DB_EVIDENCE:NEED]"},
     ]
 
     result = judge_assist(new_message, message_log)
