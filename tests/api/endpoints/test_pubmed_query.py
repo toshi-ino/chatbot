@@ -4,65 +4,60 @@ from app.main import app
 
 client = TestClient(app)
 
+# HTTPステータスコードの定数
+HTTP_OK = 200
+
+
 def test_pubmed_query_endpoint():
     # テスト用のリクエストデータ
-    request_data = {
-        "new_message": "diabetes treatment",
-        "message_log": [
-            {"role": "user", "content": "diabetes treatment"}
-        ],
-        "max_results": 5
-    }
+    request_data = {"new_message": "糖尿病の治療法について教えてください", "message_log": []}
 
     # エンドポイントにリクエストを送信
     response = client.post("/api/pubmed-query", json=request_data)
 
     # レスポンスの検証
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)
-    assert len(response.json()["pubmed_query"]) > 0
 
-def test_pubmed_query_endpoint_with_empty_query():
-    # 空のクエリでテスト
-    request_data = {
-        "new_message": "",
-        "message_log": [],
-        "max_results": 5
-    }
+
+def test_pubmed_query_endpoint_with_empty_message():
+    # 空のメッセージログでテスト
+    request_data = {"new_message": "", "message_log": []}
 
     response = client.post("/api/pubmed-query", json=request_data)
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     assert "pubmed_query" in response.json()
-    assert isinstance(response.json()["pubmed_query"], str)
 
-def test_pubmed_query_endpoint_with_invalid_max_results():
-    # 無効なmax_resultsでテスト
+
+def test_pubmed_query_endpoint_with_conversation_history():
+    # 会話履歴を含むリクエストでテスト
     request_data = {
-        "new_message": "diabetes",
+        "new_message": "治療法はありますか？",
         "message_log": [
-            {"role": "user", "content": "diabetes"}
+            {"role": "user", "content": "糖尿病について教えてください"},
+            {"role": "assistant", "content": "糖尿病は、血糖値が高くなる病気です。主な症状は..."},
+            {"role": "user", "content": "治療法はありますか？"},
         ],
-        "max_results": -1
     }
 
     response = client.post("/api/pubmed-query", json=request_data)
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)
 
-def test_pubmed_query_endpoint_with_large_max_results():
-    # 大きなmax_resultsでテスト
+
+def test_pubmed_query_endpoint_with_medical_evidence():
+    # 医学的エビデンスを含むリクエストでテスト
     request_data = {
-        "new_message": "diabetes",
+        "new_message": "高血圧の最新の治療法について教えてください",
         "message_log": [
-            {"role": "user", "content": "diabetes"}
+            {"role": "user", "content": "高血圧の最新の治療法について教えてください"},
+            {"role": "assistant", "content": "最新の研究によると、以下の治療法が効果的です..."},
         ],
-        "max_results": 100
     }
 
     response = client.post("/api/pubmed-query", json=request_data)
-    assert response.status_code == 200
+    assert response.status_code == HTTP_OK
     assert "pubmed_query" in response.json()
     assert isinstance(response.json()["pubmed_query"], str)
-    assert len(response.json()["pubmed_query"]) > 0

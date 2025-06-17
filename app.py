@@ -97,7 +97,9 @@ def get_thread_history(thread_id: str, project_name: str):
         return []
     inputs = getattr(latest_run, "inputs", {})
     outputs = getattr(latest_run, "outputs", {})
-    return inputs.get("messages", []) + [outputs.get("choices", [{}])[0].get("message", {})]
+    messages = inputs.get("messages", [])
+    message = outputs.get("choices", [{}])[0].get("message", {})
+    return [*messages, message]
 
 
 st.title("RAG Chatbot")
