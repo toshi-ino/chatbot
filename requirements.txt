@@ -398,3 +398,5 @@ zstandard @ file:///Users/cbousseau/work/recipes/ci_py311_2/zstandard_1678996192
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 langchain-openai>=0.0.2
+pytest==8.0.0
+pytest-asyncio==0.23.5

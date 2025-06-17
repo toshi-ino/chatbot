@@ -24,8 +24,8 @@ ASSIST_JUDGE_PROMPT = """
 - 「論文データベースの検索」が不要であると判断した場合は[DB_EVIDENCE:NOT]を返してください
 """
 
-@router.post("/judge", response_model=JudgeResponse)
-async def judge_assist(request: BaseRequest):
+@router.post("/db_evidence_requirements", response_model=JudgeResponse)
+async def judge_db_evidence_requirement(request: BaseRequest):
     try:
         llm = get_llm()
         # message_logを辞書のリストに変換

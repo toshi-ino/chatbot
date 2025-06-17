@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.endpoints import pubmed_query, judge, assistant_response
+from app.api.endpoints import pubmed_query, db_evidence_requirements, assistant_response
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -21,9 +21,9 @@ app.add_middleware(
 
 # ルーターの登録
 app.include_router(pubmed_query.router, prefix="/api/v1", tags=["pubmed"])
-app.include_router(judge.router, prefix="/api/v1", tags=["judge"])
+app.include_router(db_evidence_requirements.router, prefix="/api/v1", tags=["evidence"])
 app.include_router(assistant_response.router, prefix="/api/v1", tags=["assistant"])
 
 @app.get("/")
 async def root():
-    return {"message": "Medical Chatbot API is running"} 
+    return {"message": "AI API is running"} 
