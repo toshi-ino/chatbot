@@ -12,8 +12,8 @@ class Settings(BaseSettings):
 
     # OpenAI設定
     OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
-    MODEL_NAME: str = "gpt-3.5-turbo"  # デフォルトのモデル
-    TEMPERATURE: float = 0.7  # デフォルトの温度
+    DEFAULT_MODEL_NAME: str = "gpt-3.5-turbo"  # デフォルトのモデル
+    DEFAULT_TEMPERATURE: float = 0.7  # デフォルトの温度
 
     # Pinecone設定
     PINECONE_API_KEY: Optional[str] = None
