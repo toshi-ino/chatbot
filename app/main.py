@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # ルーターの登録
-app.include_router(medii_q.router, tags=["medii_q"])
+app.include_router(medii_q.router, prefix="/api", tags=["medii_q"])
 
 
 # 疎通確認用のエンドポイント

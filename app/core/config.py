@@ -1,4 +1,3 @@
-import os
 from functools import lru_cache
 from typing import Optional
 
@@ -6,12 +5,15 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # BaseSettingsで.envファイルの内容を読み込んでいます
+    # 環境変数のデフォルト値を操作するために一旦こちらで環境変数を受けています
+
     # アプリケーション基本設定
     APP_NAME: str = "AI API"
     DEBUG: bool = False
 
     # OpenAI設定
-    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
+    OPENAI_API_KEY: Optional[str] = None
     DEFAULT_MODEL_NAME: str = "gpt-3.5-turbo"  # デフォルトのモデル
     DEFAULT_TEMPERATURE: float = 0.7  # デフォルトの温度
 
@@ -24,6 +26,8 @@ class Settings(BaseSettings):
     LANGSMITH_ENDPOINT: Optional[str] = None
     LANGSMITH_API_KEY: Optional[str] = None
     LANGSMITH_PROJECT: Optional[str] = None
+
+    ENVIRONMENT: Optional[str] = None
 
     class Config:
         env_file = ".env"
