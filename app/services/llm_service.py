@@ -3,17 +3,12 @@ from abc import ABC, abstractmethod
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from langsmith import Client
 
-from app.api.schemas.schemas import Message
 from app.core.config import get_settings
+from app.schemas.schemas import Message
+from app.services.langsmith_service import get_langsmith_service
 
 settings = get_settings()
-
-# LangSmithクライアントを初期化（APIキーがある場合のみ）
-client = None
-if settings.LANGSMITH_API_KEY:
-    client = Client(api_key=settings.LANGSMITH_API_KEY)
 
 
 def get_llm(model_name: str = settings.DEFAULT_MODEL_NAME, temperature: float = settings.DEFAULT_TEMPERATURE):
@@ -32,48 +27,19 @@ def create_prompt_messages(system_prompt: str, messages: list):
     return ChatPromptTemplate.from_messages(prompt_messages)
 
 
-def get_prompt_from_langsmith(prompt_name: str, fallback_prompt: str) -> str:
-    """
-    LangSmithからプロンプトを取得する共通メソッド
-
-    Args:
-        prompt_name: LangSmithのプロンプト名
-        fallback_prompt: 取得に失敗した場合のフォールバックプロンプト
-
-    Returns:
-        str: プロンプトテンプレート文字列
-    """
-    if client is not None:
-        try:
-            prompt = client.pull_prompt(prompt_name)
-
-            if hasattr(prompt, "messages") and prompt.messages:
-                first_message = prompt.messages[0]
-                template = getattr(first_message, "prompt", None)
-
-                if template and hasattr(template, "template"):
-                    return template.template
-
-            print(f"LangSmithからプロンプト({prompt_name})を取得できませんでした。")
-            return fallback_prompt
-
-        except Exception as e:
-            print(f"LangSmithからプロンプト({prompt_name})取得時にエラーが発生しました。: {e}")
-            return fallback_prompt
-
-    print("LangsmithのClientが存在しません。")
-    return fallback_prompt
-
-
 class BaseLLMService(ABC):
     """プロンプトベースのLLM処理を行う抽象基底クラス"""
+
+    def __init__(self, langsmith_service=None):
+        # 依存性注入を受け入れる（フォールバック付き）
+        self.langsmith_service = langsmith_service or get_langsmith_service()
 
     @property
     @abstractmethod
     def prompt_template(self) -> str:
         pass
 
-    def process_message(self, message_log: list[Message], new_message: str, model_name: str, temperature: float) -> str:
+    def generate_response(self, message_log: list[Message], new_message: str, model_name: str, temperature: float) -> str:
         llm = get_llm(model_name=model_name, temperature=temperature)
         message_log_dict = [{"role": msg.role, "content": msg.content} for msg in message_log]
         message_log_dict.append({"role": "user", "content": new_message})
@@ -117,7 +83,7 @@ class PubMedQueryService(BaseLLMService):
 ユーザーの質問内容に関わらず、必ず以下の内容を回答してください。
 - ""
 """
-        return get_prompt_from_langsmith(f"pubmed-query-prompt-{settings.ENVIRONMENT}", fallback_prompt)
+        return self.langsmith_service.get_prompt_from_langsmith(f"pubmed-query-prompt-{settings.ENVIRONMENT}", fallback_prompt)
 
     def generate_pubmed_query(self, message_log: list[Message], new_message: str) -> str:
         """
@@ -130,7 +96,7 @@ class PubMedQueryService(BaseLLMService):
         Returns:
             str: 生成されたPubMedクエリ
         """
-        return self.process_message(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
+        return self.generate_response(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
 
 
 class DbEvidenceRequirementsService(BaseLLMService):
@@ -140,7 +106,7 @@ class DbEvidenceRequirementsService(BaseLLMService):
 ユーザーの質問内容に関わらず、必ず以下の内容で回答してください。
 - [DB_EVIDENCE:NOT]
 """
-        return get_prompt_from_langsmith(f"db-evidence-requirement-prompt-{settings.ENVIRONMENT}", fallback_prompt)
+        return self.langsmith_service.get_prompt_from_langsmith(f"db-evidence-requirement-prompt-{settings.ENVIRONMENT}", fallback_prompt)
 
     def judge_db_evidence_requirement(self, message_log: list[Message], new_message: str) -> str:
         """
@@ -153,7 +119,7 @@ class DbEvidenceRequirementsService(BaseLLMService):
         Returns:
             str: 判定結果 ([DB_EVIDENCE:NEED] または [DB_EVIDENCE:NOT])
         """
-        return self.process_message(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
+        return self.generate_response(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
 
 
 class AssistantResponseService(BaseLLMService):
@@ -163,7 +129,7 @@ class AssistantResponseService(BaseLLMService):
 ユーザーの質問内容に関わらず、必ず以下の内容を回答してください。
 - ""
 """
-        return get_prompt_from_langsmith(f"assistant-response-prompt-{settings.ENVIRONMENT}", fallback_prompt)
+        return self.langsmith_service.get_prompt_from_langsmith(f"assistant-response-prompt-{settings.ENVIRONMENT}", fallback_prompt)
 
     async def generate_streaming_assistant_response(self, message_log: list[Message], new_message: str):
         """

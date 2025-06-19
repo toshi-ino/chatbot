@@ -2,8 +2,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.endpoints import medii_q
 from app.core.config import get_settings
+from app.routers import medii_q
 
 # ルートの .env を読み込む
 load_dotenv()
