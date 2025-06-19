@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
@@ -35,41 +36,34 @@ class BaseLLMService(ABC):
         # 依存性注入を受け入れる（フォールバック付き）
         self.langsmith_service = langsmith_service or get_langsmith_service()
 
-    @property
     @abstractmethod
-    def prompt_template(self) -> str:
+    def get_prompt_template_and_model(self) -> tuple[str, Optional[str], Optional[float]]:
         pass
 
-    def generate_response(self, message_log: list[Message], new_message: str, model_name: str, temperature: float) -> str:
-        llm = get_llm(model_name=model_name, temperature=temperature)
+    def generate_response(self, message_log: list[Message], new_message: str) -> str:
+        prompt_template, model_name, temperature = self.get_prompt_template_and_model()  # ←修正（括弧あり）
+
+        print("prompt_template=", prompt_template)
+        print("model_name=", model_name)
+        print("temperature=", temperature)
+
+        llm = get_llm(model_name=model_name or settings.DEFAULT_MODEL_NAME, temperature=temperature or settings.DEFAULT_TEMPERATURE)
         message_log_dict = [{"role": msg.role, "content": msg.content} for msg in message_log]
         message_log_dict.append({"role": "user", "content": new_message})
 
-        prompt = create_prompt_messages(self.prompt_template, message_log_dict)
+        prompt = create_prompt_messages(prompt_template, message_log_dict)
         chain = prompt | llm
         response = chain.invoke({})
         return str(response.content).strip()
 
-    async def generate_streaming_response(self, message_log: list[Message], new_message: str, model_name: str, temperature: float):
-        """
-        メッセージからストリーミングレスポンスを生成する汎用メソッド
+    async def generate_streaming_response(self, message_log: list[Message], new_message: str):
+        prompt_template, model_name, temperature = self.get_prompt_template_and_model()
+        llm = get_llm(model_name=model_name or settings.DEFAULT_MODEL_NAME, temperature=temperature or settings.DEFAULT_TEMPERATURE)
 
-        Args:
-            message_log: メッセージ履歴のリスト
-            new_message: 新しいメッセージ
-            model_name: 使用するLLMモデル名（デフォルト: gpt-4o-mini）
-            temperature: LLMの温度パラメータ（デフォルト: 0.7）
-
-        Yields:
-            str: ストリーミングレスポンスのチャンク
-        """
-        llm = get_llm(model_name=model_name, temperature=temperature)
-
-        # メッセージリストを作成
         message_log_dict = [{"role": msg.role, "content": msg.content} for msg in message_log]
         message_log_dict.append({"role": "user", "content": new_message})
 
-        prompt = create_prompt_messages(self.prompt_template, message_log_dict)
+        prompt = create_prompt_messages(prompt_template, message_log_dict)
         chain = prompt | llm
 
         async for chunk in chain.astream({}):
@@ -78,13 +72,16 @@ class BaseLLMService(ABC):
 
 
 class PubMedQueryService(BaseLLMService):
-    @property
-    def prompt_template(self) -> str:
+    def get_prompt_template_and_model(self) -> tuple[str, Optional[str], Optional[float]]:
         fallback_prompt = """
 ユーザーの質問内容に関わらず、必ず以下の内容を回答してください。
 - ""
 """
-        return self.langsmith_service.get_prompt_from_langsmith(f"pubmed-query-prompt-{settings.ENVIRONMENT}", fallback_prompt)
+        prompt_template, model_name, temperature = self.langsmith_service.get_prompt_and_model_from_langsmith(
+            f"pubmed-query-prompt-{settings.ENVIRONMENT}", fallback_prompt
+        )
+
+        return prompt_template, model_name, temperature
 
     # NOTE：thread_idはlangsmithで計測するために引数に追加しています
     @traceable(name="PubMedQuery")
@@ -99,17 +96,20 @@ class PubMedQueryService(BaseLLMService):
         Returns:
             str: 生成されたPubMedクエリ
         """
-        return self.generate_response(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
+        return self.generate_response(message_log, new_message)
 
 
 class DbEvidenceRequirementService(BaseLLMService):
-    @property
-    def prompt_template(self) -> str:
+    def get_prompt_template_and_model(self) -> tuple[str, Optional[str], Optional[float]]:
         fallback_prompt = """
 ユーザーの質問内容に関わらず、必ず以下の内容で回答してください。
 - [DB_EVIDENCE:NOT]
 """
-        return self.langsmith_service.get_prompt_from_langsmith(f"db-evidence-requirement-prompt-{settings.ENVIRONMENT}", fallback_prompt)
+        prompt_template, model_name, temperature = self.langsmith_service.get_prompt_and_model_from_langsmith(
+            f"db-evidence-requirement-prompt-{settings.ENVIRONMENT}", fallback_prompt
+        )
+
+        return prompt_template, model_name, temperature
 
     @traceable(name="DbEvidenceRequirement")
     def judge_db_evidence_requirement(self, thread_id: str, message_log: list[Message], new_message: str) -> str:
@@ -123,17 +123,20 @@ class DbEvidenceRequirementService(BaseLLMService):
         Returns:
             str: 判定結果 ([DB_EVIDENCE:NEED] または [DB_EVIDENCE:NOT])
         """
-        return self.generate_response(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
+        return self.generate_response(message_log, new_message)
 
 
 class AssistantResponseService(BaseLLMService):
-    @property
-    def prompt_template(self) -> str:
+    def get_prompt_template_and_model(self) -> tuple[str, Optional[str], Optional[float]]:
         fallback_prompt = """
 ユーザーの質問内容に関わらず、必ず以下の内容を回答してください。
 - ""
 """
-        return self.langsmith_service.get_prompt_from_langsmith(f"assistant-response-prompt-{settings.ENVIRONMENT}", fallback_prompt)
+        prompt_template, model_name, temperature = self.langsmith_service.get_prompt_and_model_from_langsmith(
+            f"assistant-response-prompt-{settings.ENVIRONMENT}", fallback_prompt
+        )
+
+        return prompt_template, model_name, temperature
 
     @traceable(name="AssistantResponse")
     async def generate_streaming_assistant_response(self, thread_id: str, message_log: list[Message], new_message: str):
@@ -147,5 +150,5 @@ class AssistantResponseService(BaseLLMService):
         Yields:
             bytes: ストリーミングレスポンスのチャンク
         """
-        async for chunk in self.generate_streaming_response(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7):
+        async for chunk in self.generate_streaming_response(message_log, new_message):
             yield chunk

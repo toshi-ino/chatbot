@@ -1,7 +1,7 @@
 # medii-ai-platform
 
 ## 概要
-FastAPIを使用したAI APIプラットフォームです。
+FastAPIを使用したAI APIです。
 
 ## セットアップ
 

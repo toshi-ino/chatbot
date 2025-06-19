@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # 環境変数のデフォルト値を操作するために一旦こちらで環境変数を受けています
 
     # アプリケーション基本設定
-    APP_NAME: str = "AI API"
+    APP_NAME: str = "MEDII AI PLATFORM"
     DEBUG: bool = False
 
     # OpenAI設定
