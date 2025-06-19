@@ -16,10 +16,9 @@ os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "chatbot-app")
 # LANGSMITH_API_KEYは.envファイルから読み込まれる
 
-logging.basicConfig(
-    format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 @traceable(name="initialize_vectorstore")
 def initialize_vectorstore():
@@ -27,6 +26,7 @@ def initialize_vectorstore():
     embeddings = OpenAIEmbeddings(api_key=os.environ["OPENAI_API_KEY"])
 
     return PineconeVectorStore(index_name=index_name, embedding=embeddings)
+
 
 @traceable(name="load_and_split_documents")
 def load_and_split_documents(file_path: str):
@@ -41,12 +41,14 @@ def load_and_split_documents(file_path: str):
 
     return docs
 
+
 @traceable(name="add_documents_to_vectorstore")
 def add_documents_to_vectorstore(docs, index_name: str):
     """ドキュメントをベクトルストアに追加する"""
     embeddings = OpenAIEmbeddings(api_key=os.environ["OPENAI_API_KEY"])
     PineconeVectorStore.from_documents(docs, embeddings, index_name=index_name)
     logger.info("Added %d documents to vectorstore", len(docs))
+
 
 if __name__ == "__main__":
     file_path = sys.argv[1]
