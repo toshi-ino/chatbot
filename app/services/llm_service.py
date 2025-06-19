@@ -43,10 +43,6 @@ class BaseLLMService(ABC):
     def generate_response(self, message_log: list[Message], new_message: str) -> str:
         prompt_template, model_name, temperature = self.get_prompt_template_and_model()  # ←修正（括弧あり）
 
-        print("prompt_template=", prompt_template)
-        print("model_name=", model_name)
-        print("temperature=", temperature)
-
         llm = get_llm(model_name=model_name or settings.DEFAULT_MODEL_NAME, temperature=temperature or settings.DEFAULT_TEMPERATURE)
         message_log_dict = [{"role": msg.role, "content": msg.content} for msg in message_log]
         message_log_dict.append({"role": "user", "content": new_message})
