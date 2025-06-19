@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
+from langsmith import traceable
 
 from app.core.config import get_settings
-from app.schemas.schemas import Message
+from app.schemas.medii_q import Message
 from app.services.langsmith_service import get_langsmith_service
 
 settings = get_settings()
@@ -60,7 +61,7 @@ class BaseLLMService(ABC):
             temperature: LLMの温度パラメータ（デフォルト: 0.7）
 
         Yields:
-            bytes: ストリーミングレスポンスのチャンク
+            str: ストリーミングレスポンスのチャンク
         """
         llm = get_llm(model_name=model_name, temperature=temperature)
 
@@ -73,7 +74,7 @@ class BaseLLMService(ABC):
 
         async for chunk in chain.astream({}):
             if hasattr(chunk, "content") and chunk.content:
-                yield str(chunk.content).encode("utf-8")
+                yield str(chunk.content)
 
 
 class PubMedQueryService(BaseLLMService):
@@ -85,6 +86,7 @@ class PubMedQueryService(BaseLLMService):
 """
         return self.langsmith_service.get_prompt_from_langsmith(f"pubmed-query-prompt-{settings.ENVIRONMENT}", fallback_prompt)
 
+    @traceable(name="PubMedQuery")
     def generate_pubmed_query(self, message_log: list[Message], new_message: str) -> str:
         """
         メッセージからPubMedクエリを生成する
@@ -99,7 +101,7 @@ class PubMedQueryService(BaseLLMService):
         return self.generate_response(message_log, new_message, model_name="gpt-4o-mini", temperature=0.7)
 
 
-class DbEvidenceRequirementsService(BaseLLMService):
+class DbEvidenceRequirementService(BaseLLMService):
     @property
     def prompt_template(self) -> str:
         fallback_prompt = """
@@ -108,6 +110,7 @@ class DbEvidenceRequirementsService(BaseLLMService):
 """
         return self.langsmith_service.get_prompt_from_langsmith(f"db-evidence-requirement-prompt-{settings.ENVIRONMENT}", fallback_prompt)
 
+    @traceable(name="DbEvidenceRequirement")
     def judge_db_evidence_requirement(self, message_log: list[Message], new_message: str) -> str:
         """
         メッセージ履歴と新しいメッセージから論文データベース検索の必要性を判定する
@@ -131,6 +134,7 @@ class AssistantResponseService(BaseLLMService):
 """
         return self.langsmith_service.get_prompt_from_langsmith(f"assistant-response-prompt-{settings.ENVIRONMENT}", fallback_prompt)
 
+    @traceable(name="AssistantResponse")
     async def generate_streaming_assistant_response(self, message_log: list[Message], new_message: str):
         """
         アシスタント回答のストリーミングレスポンスを生成する

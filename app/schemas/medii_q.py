@@ -11,7 +11,7 @@ class BaseRequest(BaseModel):
     message_log: list[Message]
 
 
-class JudgeResponse(BaseModel):
+class DbEvidenceRequirementsResponse(BaseModel):
     result: str  # [DB_EVIDENCE:NEED] または [DB_EVIDENCE:NOT] を返す
 
 
