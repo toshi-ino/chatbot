@@ -1,11 +1,8 @@
 import os
 
 from dotenv import load_dotenv
-from langchain.prompts import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-)
-from langchain.schema.messages import AIMessage, HumanMessage
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
@@ -16,7 +13,7 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0, streaming=True, api_key=SecretSt
 
 
 def stream_assistant_response(prompt_template: str, new_message: str, message_log: list):
-    messages = [SystemMessagePromptTemplate.from_template(prompt_template)]
+    messages: list = [SystemMessage(content=prompt_template)]
 
     for log in message_log:
         role = log["role"]

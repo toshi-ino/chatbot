@@ -6,15 +6,13 @@ import uuid
 import langsmith as ls
 import openai
 import streamlit as st
+from add_document import initialize_vectorstore
 from dotenv import load_dotenv
 from langsmith import Client, traceable
 from langsmith.wrappers import wrap_openai
 
-from add_document import initialize_vectorstore
-
 load_dotenv()
 
-os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
 os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY", "")
 os.environ["LANGSMITH_PROJECT"] = os.getenv("LANGSMITH_PROJECT", "project-with-threads")
@@ -102,7 +100,7 @@ def get_thread_history(thread_id: str, project_name: str):
     return [*messages, message]
 
 
-st.title("RAG Chatbot")
+st.title("Medii AI Platform")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []

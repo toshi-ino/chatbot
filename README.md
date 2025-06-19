@@ -1,5 +1,5 @@
-# chatbot
-チャットボット
+# medii-ai-platform
+メディーAIプラットフォーム
 
 ## 概要
 LangChainとStreamlitを使用したRAG（Retrieval-Augmented Generation）チャットボットアプリケーションです。
@@ -33,7 +33,7 @@ PINECONE_INDEX=your_pinecone_index_name_here
 
 # LangSmith設定（オプション - 観測とトレーシングのため）
 LANGSMITH_API_KEY=your_langsmith_api_key_here
-LANGCHAIN_PROJECT=chatbot-app
+LANGCHAIN_PROJECT=medii-ai-platform
 ```
 
 ### 3. LangSmithの設定
@@ -46,9 +46,8 @@ LangSmithでの観測を有効にするには：
 
 または、環境変数を直接設定することもできます：
 ```bash
-export LANGSMITH_TRACING=true
 export LANGSMITH_API_KEY="<your-langsmith-api-key>"
-export LANGCHAIN_PROJECT="chatbot-app"
+export LANGCHAIN_PROJECT="medii-ai-platform"
 ```
 
 LangSmithが設定されると、以下の情報が自動的に記録されます：
@@ -82,5 +81,5 @@ streamlit run app.py
 - 検索クエリと結果
 - エラーの詳細情報
 
-プロジェクト名は環境変数`LANGCHAIN_PROJECT`で設定できます（デフォルト: "chatbot-app"）。
+プロジェクト名は環境変数`LANGCHAIN_PROJECT`で設定できます（デフォルト: "medii-ai-platform"）。
 # AI-API
