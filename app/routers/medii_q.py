@@ -27,8 +27,8 @@ async def judge_db_evidence_requirements(request: BaseRequest, langsmith_service
     """論文データベース検索の必要性を判定する"""
     try:
         service = DbEvidenceRequirementService(langsmith_service=langsmith_service)
-        judgment = service.judge_db_evidence_requirement(request.thread_id, request.message_log, request.new_message)
-        return DbEvidenceRequirementsResponse(result=judgment)
+        requirement = service.judge_db_evidence_requirement(request.thread_id, request.message_log, request.new_message)
+        return DbEvidenceRequirementsResponse(result=requirement)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
