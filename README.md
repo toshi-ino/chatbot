@@ -1,16 +1,7 @@
 # medii-ai-platform
-メディーAIプラットフォーム
 
 ## 概要
-LangChainとStreamlitを使用したRAG（Retrieval-Augmented Generation）チャットボットアプリケーションです。
-PDFドキュメントをベクトル化してPineconeに保存し、質問に対して関連する情報を検索して回答を生成します。
-
-## 機能
-- PDFドキュメントの読み込みとベクトル化
-- Pineconeを使用したベクトル検索
-- OpenAI GPTモデルを使用した回答生成
-- Streamlitによる対話型UI
-- LangSmithによる観測とトレーシング
+FastAPIを使用したAI APIプラットフォームです。
 
 ## セットアップ
 
@@ -20,66 +11,62 @@ pip install -r requirements.txt
 ```
 
 ### 2. 環境変数の設定
-`.env`ファイルを作成し、以下の環境変数を設定してください：
+`.env`ファイルを作成し、必要な環境変数を設定してください。
 
-```env
-# OpenAI設定
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_API_TEMPERATURE=0.7
-
-# Pinecone設定
-PINECONE_API_KEY=your_pinecone_api_key_here
-PINECONE_INDEX=your_pinecone_index_name_here
-
-# LangSmith設定（オプション - 観測とトレーシングのため）
-LANGSMITH_API_KEY=your_langsmith_api_key_here
-LANGCHAIN_PROJECT=medii-ai-platform
-```
-
-### 3. LangSmithの設定
-LangSmithでの観測を有効にするには：
-
-1. [LangSmith](https://smith.langchain.com/)にアカウントを作成
-2. APIキーを取得
-3. `.env`ファイルに`LANGSMITH_API_KEY`を設定
-4. 必要に応じて`LANGCHAIN_PROJECT`名を変更
-
-または、環境変数を直接設定することもできます：
+### 3. Docker環境での起動
 ```bash
-export LANGSMITH_API_KEY="<your-langsmith-api-key>"
-export LANGCHAIN_PROJECT="medii-ai-platform"
-```
+# Dockerコンテナをビルドして起動
+docker-compose up --build
 
-LangSmithが設定されると、以下の情報が自動的に記録されます：
-- LLMの呼び出し履歴
-- プロンプトと応答
-- 実行時間とトークン使用量
-- エラーログ
-- チェーンの実行フロー
-- `@traceable`デコレータで装飾された関数の実行トレース
+# コンテナを停止する場合
+docker-compose down
+```
 
 ## 使用方法
 
-### 1. ドキュメントの追加
+### API確認
+アプリケーションが起動したら、以下のURLでAPIにアクセスできます：
+
+- API Root: http://localhost:8000/
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+
+## テスト
+
+### テストの実行
 ```bash
-python add_document.py path/to/your/document.pdf
+# 全テストの実行
+pytest
+
+# 詳細な出力でテスト実行
+pytest -v
 ```
 
-### 2. アプリケーションの起動
+## 開発
+
+### コード品質チェック
 ```bash
-streamlit run app.py
+# ruffによるリンティング
+ruff check .
+
+# ruffによるフォーマット
+ruff format .
 ```
 
-### 3. チャットボットの使用
-ブラウザでアプリケーションにアクセスし、質問を入力してください。
-システムは関連するドキュメントを検索し、それに基づいて回答を生成します。
-
-## LangSmithでの観測
-アプリケーションが実行されると、LangSmithダッシュボードで以下を確認できます：
-- 各会話セッションのトレース
-- LLMの応答時間とコスト
-- 検索クエリと結果
-- エラーの詳細情報
-
-プロジェクト名は環境変数`LANGCHAIN_PROJECT`で設定できます（デフォルト: "medii-ai-platform"）。
-# AI-API
+## プロジェクト構成
+```
+medii-ai-platform/
+├── app/                    # アプリケーションコード
+│   ├── main.py            # FastAPIメインアプリケーション
+│   ├── core/              # 設定とコア機能
+│   ├── routers/           # APIルーター
+│   ├── services/          # ビジネスロジック
+│   └── schemas/           # Pydanticスキーマ
+├── tests/                 # テストコード
+├── docker-compose.yml     # Docker Compose設定
+├── Dockerfile            # Dockerイメージ設定
+├── requirements.txt      # 本番依存関係
+├── requirements-dev.txt  # 開発依存関係
+└── pyproject.toml       # プロジェクト設定
+```

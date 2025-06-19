@@ -1,14 +1,17 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
 class Message(BaseModel):
-    role: str
+    role: Literal["user", "assistant"]
     content: str
 
 
 class BaseRequest(BaseModel):
+    thread_id: str
     new_message: str
-    message_log: list[Message]
+    message_log: list[Message] = []
 
 
 class DbEvidenceRequirementsResponse(BaseModel):
