@@ -13,7 +13,6 @@ class LangSmithService:
         self.settings = get_settings()
         self.client = None
 
-        # LangSmithクライアントを初期化（APIキーがある場合のみ）
         if self.settings.LANGSMITH_API_KEY:
             self.client = Client(api_key=self.settings.LANGSMITH_API_KEY)
 
