@@ -9,6 +9,7 @@ class Message(BaseModel):
 
 
 class BaseRequest(BaseModel):
+    account_id: str
     thread_id: str
     new_message: str
     message_log: list[Message] = []

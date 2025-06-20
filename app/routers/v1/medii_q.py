@@ -16,7 +16,7 @@ async def generate_pubmed_query(request: BaseRequest, langsmith_service: LangSmi
     """PubMedの検索クエリを生成する"""
     try:
         service = PubMedQueryService(langsmith_service=langsmith_service)
-        pubmed_query = service.generate_pubmed_query(request.thread_id, request.message_log, request.new_message)
+        pubmed_query = service.generate_pubmed_query(request.account_id, request.thread_id, request.message_log, request.new_message)
         return PubMedQueryResponse(pubmed_query=pubmed_query)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -27,7 +27,7 @@ async def judge_db_evidence_requirements(request: BaseRequest, langsmith_service
     """論文データベース検索の必要性を判定する"""
     try:
         service = DbEvidenceRequirementService(langsmith_service=langsmith_service)
-        requirement = service.judge_db_evidence_requirement(request.thread_id, request.message_log, request.new_message)
+        requirement = service.judge_db_evidence_requirement(request.account_id, request.thread_id, request.message_log, request.new_message)
         return DbEvidenceRequirementsResponse(result=requirement)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -40,7 +40,8 @@ async def generate_streaming_assistant_response(request: BaseRequest, langsmith_
         service = AssistantResponseService(langsmith_service=langsmith_service)
 
         return StreamingResponse(
-            service.generate_streaming_assistant_response(request.thread_id, request.message_log, request.new_message), media_type="text/plain"
+            service.generate_streaming_assistant_response(request.account_id, request.thread_id, request.message_log, request.new_message),
+            media_type="text/plain",
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e

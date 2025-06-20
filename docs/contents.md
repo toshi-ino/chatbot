@@ -3,10 +3,14 @@
 ## 目次
 
 1. [メインアプリケーション](./main.md) - FastAPIアプリケーションのエントリーポイント
-2. [コア設定](./core.md) - アプリケーション設定の管理
-3. [データモデル](./schemas.md) - APIリクエスト・レスポンスのスキーマ定義
-4. [APIルーター](./router.md) - エンドポイントの定義と処理
-5. [サービス層](./services.md) - ビジネスロジックとLLM処理
+2. [コア設定](./core/config.md) - アプリケーション設定の管理
+3. [データモデル](./schemas/medii_q.md) - APIリクエスト・レスポンスのスキーマ定義
+4. [APIルーター](#apiルーター) - エンドポイントの定義と処理
+   - [v1統合ルーター](./routers/v1/__init__.md) - v1バージョンのルーター統合管理
+   - [v1 MediiQ API](./routers/v1/medii_q.md) - v1バージョンのMediiQ関連エンドポイント
+5. [サービス層](#サービス層) - ビジネスロジックとLLM処理
+   - [LLMサービス](./services/llm_service.md) - OpenAI GPTを使用したLLM処理
+   - [LangSmithサービス](./services/langsmith_service.md) - LangSmithとの連携機能
 
 ## アプリケーション概要
 
@@ -95,4 +99,3 @@ app/
 ### 監視・トレーシング
 - LangSmithによる処理トレーシング
 - プロンプトの外部管理による運用効率化
-

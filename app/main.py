@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import medii_q
+from app.routers.v1 import v1_router
 
 # ルートの .env を読み込む
 load_dotenv()
@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # ルーターの登録
-app.include_router(medii_q.router, prefix="/api", tags=["medii_q"])
+app.include_router(v1_router, prefix="/api/v1")
 
 
 # 疎通確認用のエンドポイント

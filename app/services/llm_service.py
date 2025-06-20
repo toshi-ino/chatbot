@@ -81,7 +81,7 @@ class PubMedQueryService(BaseLLMService):
 
     # NOTE：thread_idはlangsmithで計測するために引数に追加しています
     @traceable(name="PubMedQuery")
-    def generate_pubmed_query(self, thread_id: str, message_log: list[Message], new_message: str) -> str:
+    def generate_pubmed_query(self, account_id: str, thread_id: str, message_log: list[Message], new_message: str) -> str:
         """
         メッセージからPubMedクエリを生成する
 
@@ -108,7 +108,7 @@ class DbEvidenceRequirementService(BaseLLMService):
         return prompt_template, model_name, temperature
 
     @traceable(name="DbEvidenceRequirement")
-    def judge_db_evidence_requirement(self, thread_id: str, message_log: list[Message], new_message: str) -> str:
+    def judge_db_evidence_requirement(self, account_id: str, thread_id: str, message_log: list[Message], new_message: str) -> str:
         """
         メッセージ履歴と新しいメッセージから論文データベース検索の必要性を判定する
 
@@ -135,7 +135,7 @@ class AssistantResponseService(BaseLLMService):
         return prompt_template, model_name, temperature
 
     @traceable(name="AssistantResponse")
-    async def generate_streaming_assistant_response(self, thread_id: str, message_log: list[Message], new_message: str):
+    async def generate_streaming_assistant_response(self, account_id: str, thread_id: str, message_log: list[Message], new_message: str):
         """
         アシスタント回答のストリーミングレスポンスを生成する
 

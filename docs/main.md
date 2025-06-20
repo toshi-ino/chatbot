@@ -18,8 +18,9 @@ MEDII AI Platformのメインアプリケーションファイルです。FastAP
 - すべてのHTTPヘッダー
 
 ### ルーター設定
-- **medii_q ルーター**: `/api` プレフィックスで登録
-- タグ: `medii_q`
+- **v1 APIルーター**: `/api/v1` プレフィックスで登録
+- ルーター統合: `app.routers.v1.v1_router` を使用
+- バージョン管理: 将来的なv2, v3追加に対応
 
 ### エンドポイント
 
@@ -27,12 +28,24 @@ MEDII AI Platformのメインアプリケーションファイルです。FastAP
 - **目的**: 疎通確認用のエンドポイント
 - **レスポンス**: `{"message": "AI API is running"}`
 
+## バージョン管理
+
+### v1 API構造
+- **ベースURL**: `/api/v1`
+- **統合ルーター**: `v1_router` により各機能別ルーターを統合
+- **機能別分類**: Swagger UIでは `medii_q` タグで分類表示
+
+### 将来の拡張
+- 新バージョン（v2, v3等）の追加が容易
+- 既存バージョンとの並行運用が可能
+- 段階的な移行とレガシーサポートに対応
+
 ## 依存関係
 - `fastapi`: Webフレームワーク
 - `fastapi.middleware.cors`: CORS対応
 - `dotenv`: 環境変数の読み込み
 - `app.core.config`: アプリケーション設定
-- `app.routers.medii_q`: APIルーター
+- `app.routers.v1`: v1 APIルーター
 
 ## 設定ファイル
 ルートディレクトリの `.env` ファイルから環境変数を読み込みます。
